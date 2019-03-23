@@ -1,75 +1,69 @@
 import pygame
 import random
+from random import randrange
 from settings import Settings
+from skier import Skier
+# pygame.display.set_icon()
+# background_image = pygame.image.load('timg.jpg').convert()#背景图
+
+# 画图
+# pygame.draw.circle(window,[0,0,0],[50,50],50,0)
+my_set = Settings()  # 用的是设置类
+
+# 定义一个场景类
+class TreeOrFlag(pygame.sprite.Sprite):
+    def __init__(self, treeOrFlag):
+        pygame.sprite.Sprite.__init__(self)
+        self.treeOrFlag = treeOrFlag
+        if treeOrFlag:
+            self.image = pygame.image.load('./skier_tree.png')
+        else:
+            self.image = pygame.image.load('./skier_flag.png')
+        self.rect = self.image.get_rect()
+        self.rect.top = self.rect.height + my_set.screen_height
+        self.rect.centerx = randrange(my_set.screen_width - self.rect.width) + self.rect.width / 2
+
+    def update(self, *args):
+        self.rect.top -= 1
+        if self.rect.top < -self.rect.height:
+            self.kill()
 
 # 初始化
 pygame.init()
 pygame.mixer.init()
 # 游戏窗口初始化
-my_settings = Settings()  # 用的是设置类
-window = pygame.display.set_mode((my_settings.screen_width, my_settings.screen_height))  # 窗口大小
-pygame.display.set_caption(my_settings.name)  # 窗口名字
+window = pygame.display.set_mode((my_set.screen_width, my_set.screen_height))  # 窗口大小
+screen = pygame.display.get_surface()
+pygame.display.set_caption(my_set.name)  # 窗口名字
 
-# pygame.display.set_icon()
-# background_image = pygame.image.load('timg.jpg').convert()#背景图
-skier_images = ['./skier_crash.png', './skier_down.png', './skier_left1.png', './skier_left2.png',
-                './skier_right1.png', './skier_right2.png', ]
-down_image = pygame.image.load(skier_images[1]).convert()
-# 画图
-# pygame.draw.circle(window,[0,0,0],[50,50],50,0)
+clock = pygame.time.Clock()  #帧率显示,先定义一个时间对象
+
+sprites = pygame.sprite.RenderUpdates()  #创建sprite容器
+skier_sprite = pygame.sprite.RenderUpdates()
+#添加树或旗子创建自定义事件
+AddEnemy = pygame.USEREVENT + 1
+pygame.time.set_timer(AddEnemy,40)
 
 # 音乐
 # pygame.mixer.muisc.load('bg_music.mp3')
 
-# 雪人初始位置
-begin_top = 0
-begin_left = my_settings.screen_width / 2 - down_image.get_width() / 2
-
-#定义一个雪人类
-class Skier(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(skier_images[1]).convert()
-        self.rect = self.image.get_rect()
-        self.rect.top = begin_top #雪人初始位置
-        self.rect.left = begin_left
-        #移动速度
-        self.down_speed = 1
-    #左右方向
-    def move_left(self):
-        if self.rect.left > 0:
-            self.image = pygame.image.load(skier_images[2]).convert()
-            self.rect.left -= 1
-    def move_right(self):
-        if self.rect.left < my_settings.screen_width-self.image.get_width():
-            self.image = pygame.image.load(skier_images[4]).convert()
-            self.rect.left += 1
-    #速度增减
-    def move_fater(self):
-        pass
-    def move_lower(self):
-        pass
-
-    def hit(self):  #碰撞
-        pass
-    # def move_down(self):
-    #     self.rect.top += self.down_speed
-
-#定义一个场景类
-class RandomTree(object):
-    def __init__(self,tree_flag):
-        self.tree_flag = tree_flag
-
-
-
 #运行游戏
-
 skier = Skier()  # 创建滑雪小人
+skier_sprite.add(skier)
+
+#左上角计算分数
+countObj = pygame.font.SysFont('方正兰亭超细黑简体',30)
+# countObj.set_bold(True)  #加粗
+print(pygame.font.get_fonts())
+textObj = countObj.render('得分为：0',True,(255,0,0))
+textRectObj = textObj.get_rect()
+
+count_num = 0
+
 while True:
     # 先加载背景图
-    window.fill(my_settings.bg_color)  # 填充，参数填写的是rgb值
+    window.fill(my_set.bg_color)  # 填充，参数填写的是rgb值
     # window.blit(background_image,(0,0))
-
     ret = pygame.event.get()  # 事件
     # 退出游戏判断
     for obj in ret:
@@ -79,46 +73,37 @@ while True:
     # 获取键盘状态
     pressed_keys = pygame.key.get_pressed()
     # if not pressed_keys[pygame.K_UP] and skier.rect.bottom < my_settings.screen_height:
-    # 场景组
-    scene = []
-    for i in range(0, 10):
-        # 总共10个场景，随机旗子或树
-        tree_flag = random.randint(1, 10)
-        if tree_flag % 2:
-            tree_image = pygame.image.load('./skier_tree.png').convert()
-            rect_tree = tree_image.get_rect()
-            rect_tree.left = my_settings.screen_width / 10 * tree_flag
-            rect_tree.top = my_settings.screen_height+my_settings.screen_height / 10 * random.randint(1, 10)
-            window.blit(tree_image, rect_tree)
-            scene.append(tree_image)
-            scene.append(rect_tree)
-        else:
-            flag_image = pygame.image.load('./skier_flag.png').convert()
-            rect_flag = flag_image.get_rect()
-            rect_flag.left = my_settings.screen_width / 10 * tree_flag
-            rect_flag.top = my_settings.screen_height+my_settings.screen_height / 10 * random.randint(1, 10)
-            window.blit(flag_image, rect_flag)
-            scene.append(flag_image)
-            scene.append(rect_flag)
+    #调用方法更新
+    skier.update(pressed_keys)
+    #判断事件，生成场景
+    for event in pygame.event.get():
+        if event.type == AddEnemy:
+            rand_num = random.randint(1,10)
+            if rand_num %2:
+                sprites.add(TreeOrFlag(1))
+            else:
+                sprites.add(TreeOrFlag(0))
 
-    #按键方法
-    if not pressed_keys[pygame.K_o]:
-        for i in range(0,20):
-            if i%2:
-                rect_scene = scene[i]
-                rect_scene.top -= 1
-    if pressed_keys[pygame.K_LEFT] or pressed_keys[pygame.K_a]:
-        skier.move_left()
-        print('按下左键')
-    elif pressed_keys[pygame.K_RIGHT] or pressed_keys[pygame.K_d]:
-        skier.move_right()
-    else:
-        skier.image = pygame.image.load(skier_images[1]).convert()
-    for i in range(0, 20):
-        if i % 2:
-            rect_scene = scene[i]
-            window.blit(scene[i - 1], rect_scene)
+    #判断碰撞
+    if pygame.sprite.spritecollide(skier,sprites,False):
+        # tree_flag = sprites()
+        # if tree_flag.treeOrFlag :
+        #     count_num -= 50
+        # else:
+        #     count_num += 10
+        count_num += 10
+        textObj == countObj.render('得分为：%d' % count_num, False, (255, 0, 0))
+        textRectObj = textObj.get_rect()
+        print(count_num)
+        pygame.display.flip()
+    #场景动画更新
+    sprites.update()
+    updates = sprites.draw(window)
+    pygame.display.update(updates)
+    #添加画面以及帧率
     window.blit(skier.image, skier.rect)  # 添加小人画面
+    window.blit(textObj, textRectObj)
+    clock.tick(100)
     pygame.display.update()  # 必须要更新显示的内容
 
 
@@ -136,3 +121,4 @@ while True:
 #     elif obj.key == pygame.K_RIGHT or obj.key == pygame.K_d:
 #         skier.move_right()
 #         print('向右')
+
