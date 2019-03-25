@@ -8,23 +8,38 @@ from skier import Skier
 
 # 画图
 # pygame.draw.circle(window,[0,0,0],[50,50],50,0)
-my_set = Settings()  # 用的是设置类
+my_set = Settings()  # 用的是设置类  系统外观设置
+skier_images = ['./skier_crash.png', './skier_down.png', './skier_left1.png', './skier_left2.png',
+                './skier_right1.png', './skier_right2.png', ]   #滑雪者的图
 
-# 定义一个场景类
-class TreeOrFlag(pygame.sprite.Sprite):
-    def __init__(self, treeOrFlag):
+# 定义两个场景类，一个为树，一个为旗子
+#这个是树类
+class TreeClass(pygame.sprite.Sprite):
+    def __init__(self,speed):
         pygame.sprite.Sprite.__init__(self)
-        self.treeOrFlag = treeOrFlag
-        if treeOrFlag:
-            self.image = pygame.image.load('./skier_tree.png')
-        else:
-            self.image = pygame.image.load('./skier_flag.png')
+        self.image = pygame.image.load('./skier_tree.png')
         self.rect = self.image.get_rect()
         self.rect.top = self.rect.height + my_set.screen_height
         self.rect.centerx = randrange(my_set.screen_width - self.rect.width) + self.rect.width / 2
+        self.speed = speed
 
     def update(self, *args):
-        self.rect.top -= 1
+        self.rect.top -= self.speed
+        if self.rect.top < -self.rect.height:
+            self.kill()
+
+#这是一个旗子类
+class FlagClass(pygame.sprite.Sprite):
+    def __init__(self,speed):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('./skier_flag.png')
+        self.rect = self.image.get_rect()
+        self.rect.top = self.rect.height + my_set.screen_height
+        self.rect.centerx = randrange(my_set.screen_width - self.rect.width) + self.rect.width / 2
+        self.speed = speed
+
+    def update(self, *args):
+        self.rect.top -= self.speed
         if self.rect.top < -self.rect.height:
             self.kill()
 
@@ -38,28 +53,27 @@ pygame.display.set_caption(my_set.name)  # 窗口名字
 
 clock = pygame.time.Clock()  #帧率显示,先定义一个时间对象
 
-sprites = pygame.sprite.RenderUpdates()  #创建sprite容器
-skier_sprite = pygame.sprite.RenderUpdates()
+tree_sprites = pygame.sprite.RenderUpdates()  #创建sprite容器  树
+flag_sprites = pygame.sprite.RenderUpdates()  #旗子容器
 #添加树或旗子创建自定义事件
 AddEnemy = pygame.USEREVENT + 1
 pygame.time.set_timer(AddEnemy,40)
-
 # 音乐
 # pygame.mixer.muisc.load('bg_music.mp3')
-
-#运行游戏
-skier = Skier()  # 创建滑雪小人
-skier_sprite.add(skier)
+skier = Skier(1)  # 创建滑雪小人
 
 #左上角计算分数
-countObj = pygame.font.SysFont('方正兰亭超细黑简体',30)
+# countObj = pygame.font.SysFont('方正兰亭超细黑简体',30)
+countObj = pygame.font.Font(None,60)
 # countObj.set_bold(True)  #加粗
 print(pygame.font.get_fonts())
-textObj = countObj.render('得分为：0',True,(255,0,0))
+textObj = countObj.render('SCORE:0',True,(255,0,0))
 textRectObj = textObj.get_rect()
-
+#这个是计算分数
 count_num = 0
-
+#计算碰撞次数，10次场景加一次速度，最多叠加10次
+hit_count = 0
+#运行游戏
 while True:
     # 先加载背景图
     window.fill(my_set.bg_color)  # 填充，参数填写的是rgb值
@@ -80,30 +94,52 @@ while True:
         if event.type == AddEnemy:
             rand_num = random.randint(1,10)
             if rand_num %2:
-                sprites.add(TreeOrFlag(1))
+                tree_sprites.add(TreeClass(1))
             else:
-                sprites.add(TreeOrFlag(0))
+                flag_sprites.add(FlagClass(1))
 
-    #判断碰撞
-    if pygame.sprite.spritecollide(skier,sprites,False):
-        # tree_flag = sprites()
-        # if tree_flag.treeOrFlag :
-        #     count_num -= 50
-        # else:
-        #     count_num += 10
+    #判断与树碰撞
+    if pygame.sprite.spritecollide(skier,tree_sprites,False):
+        count_num -= 10
+        hit_count += 1
+        hit = pygame.sprite.spritecollide(skier,tree_sprites,False)
+        hit[0].kill()
+        skier.image = pygame.image.load(skier_images[0]).convert()
+        # pygame.time.delay(1000)
+        # pygame.display.flip()
+
+    if pygame.sprite.spritecollide(skier,flag_sprites,False):
         count_num += 10
-        textObj == countObj.render('得分为：%d' % count_num, False, (255, 0, 0))
-        textRectObj = textObj.get_rect()
-        print(count_num)
-        pygame.display.flip()
+        hit_count += 1
+        hit = pygame.sprite.spritecollide(skier,flag_sprites,False)
+        hit[0].kill()
+    #判断累计碰撞次数：
+    if hit_count <50 and hit_count > 10:
+        hit_num = hit_count//10
+        for obj in tree_sprites:
+            obj.speed = hit_num
+        for obj in flag_sprites:
+            obj.speed = hit_num
+        skier.speed = hit_num
+    elif hit_count > 50:
+        for obj in tree_sprites:
+            obj.speed = 5
+        for obj in flag_sprites:
+            obj.speed = 5
+        skier.speed = hit_num
     #场景动画更新
-    sprites.update()
-    updates = sprites.draw(window)
-    pygame.display.update(updates)
+    tree_sprites.update()
+    tree_updates = tree_sprites.draw(window)
+    pygame.display.update(tree_updates)
+    flag_sprites.update()
+    flag_updates = flag_sprites.draw(window)
+    pygame.display.update(flag_updates)
     #添加画面以及帧率
     window.blit(skier.image, skier.rect)  # 添加小人画面
-    window.blit(textObj, textRectObj)
     clock.tick(100)
+    textObj = countObj.render('SCORE:%s' % count_num, False, (255, 0, 0))  #显示得分内容
+    textRectObj = textObj.get_rect()
+    window.blit(textObj, textRectObj)  #这是得分
     pygame.display.update()  # 必须要更新显示的内容
 
 
