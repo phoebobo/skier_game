@@ -92,12 +92,10 @@ while True:
     #判断事件，生成场景
     for event in pygame.event.get():
         if event.type == AddEnemy:
-            rand_num = random.randint(1,10)
-            if rand_num %2:
+            if random.randint(1,10) %2:
                 tree_sprites.add(TreeClass(1))
             else:
                 flag_sprites.add(FlagClass(1))
-
     #判断与树碰撞
     if pygame.sprite.spritecollide(skier,tree_sprites,False):
         count_num -= 10
@@ -107,7 +105,7 @@ while True:
         skier.image = pygame.image.load(skier_images[0]).convert()
         # pygame.time.delay(1000)
         # pygame.display.flip()
-
+    #与旗子碰撞
     if pygame.sprite.spritecollide(skier,flag_sprites,False):
         count_num += 10
         hit_count += 1
@@ -141,20 +139,4 @@ while True:
     textRectObj = textObj.get_rect()
     window.blit(textObj, textRectObj)  #这是得分
     pygame.display.update()  # 必须要更新显示的内容
-
-
-# 按键
-# elif obj.type == pygame.KEYDOWN:
-#     # print('按了键盘')
-#     # print('此时按下的键是',obj.key)
-#     if obj.key == pygame.K_DOWN or obj.key == pygame.K_s:
-#         print('此时按了向下的键')
-#     elif obj.key == pygame.K_UP or obj.key == pygame.K_w:
-#         print('向上')
-#     elif obj.key == pygame.K_LEFT or obj.key == pygame.K_a:
-#         skier.move_left()
-#         print('向左')
-#     elif obj.key == pygame.K_RIGHT or obj.key == pygame.K_d:
-#         skier.move_right()
-#         print('向右')
 
