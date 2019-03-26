@@ -33,20 +33,20 @@ class Skier(pygame.sprite.Sprite):
             if self.rect.left > 0:
                 self.image = pygame.image.load(skier_images[2]).convert()
                 self.rect.left -= self.speed
-
         elif pressed_keys[pygame.K_RIGHT] or pressed_keys[pygame.K_d]:
-            if self.rect.left < 600 - self.image.get_width():
+            if self.rect.left < my_set.screen_width - self.image.get_width():
                 self.image = pygame.image.load(skier_images[4]).convert()
                 self.rect.left += self.speed
-        else:
+        if pressed_keys[pygame.K_UP] or pressed_keys[pygame.K_w]:
+            if self.rect.top > 0 :
+                self.image = pygame.image.load(skier_images[1]).convert()
+                self.rect.top -= self.speed
+        elif pressed_keys[pygame.K_DOWN] or pressed_keys[pygame.K_s]:
+            if self.rect.top < my_set.screen_height - self.image.get_height():
+                self.image = pygame.image.load(skier_images[1]).convert()
+                self.rect.top += self.speed
+        if not pressed_keys:
             self.image = pygame.image.load(skier_images[1]).convert()
-
-    # 速度增减
-    def move_fater(self):
-        pass
-
-    def move_lower(self):
-        pass
 
     def hit(self):  # 碰撞
         pass
