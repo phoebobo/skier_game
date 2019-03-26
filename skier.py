@@ -45,7 +45,9 @@ class Skier(pygame.sprite.Sprite):
             if self.rect.top < my_set.screen_height - self.image.get_height():
                 self.image = pygame.image.load(skier_images[1]).convert()
                 self.rect.top += self.speed
-        if not pressed_keys:
+        if not (pressed_keys[pygame.K_LEFT] or pressed_keys[pygame.K_a] or pressed_keys[pygame.K_RIGHT] or
+            pressed_keys[pygame.K_d] or pressed_keys[pygame.K_UP] or pressed_keys[pygame.K_w] or
+                pressed_keys[pygame.K_DOWN] or pressed_keys[pygame.K_s]):
             self.image = pygame.image.load(skier_images[1]).convert()
 
     def hit(self):  # 碰撞
