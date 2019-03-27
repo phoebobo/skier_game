@@ -58,7 +58,6 @@ if __name__ == '__main__':
                 exit()
         # 获取键盘状态
         pressed_keys = pygame.key.get_pressed()
-        # if not pressed_keys[pygame.K_UP] and skier.rect.bottom < my_settings.screen_height:
         #调用方法更新
         skier.update(pressed_keys)
         #判断事件，生成场景
@@ -81,8 +80,6 @@ if __name__ == '__main__':
                 count_num += 10
                 hit_count += 1
                 hit[0].kill()
-
-            # pygame.display.flip()
         #判断累计碰撞次数：
         if hit_count <50 and hit_count > 10:
             hit_num = hit_count//10
