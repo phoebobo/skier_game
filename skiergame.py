@@ -68,14 +68,14 @@ if __name__ == '__main__':
                 else:
                     treeFlag_sprites.add(TreeFlagClass(1,0))
         #判断与树或者旗子碰撞
-        if pygame.sprite.spritecollide(skier,treeFlag_sprites,False):
-            hit = pygame.sprite.spritecollide(skier, treeFlag_sprites, False)
+        hit = pygame.sprite.spritecollide(skier, treeFlag_sprites, False)
+        if hit:
             if hit[0].type == 'tree':
                 count_num -= 100
                 hit_count += 1
                 hit[0].kill()
                 skier.image = pygame.image.load(skier_images[0]).convert()
-                pygame.time.delay(1000)
+                # skier.image = pygame.image.load(skier_images[1]).convert()
             else:
                 count_num += 10
                 hit_count += 1
